@@ -55,6 +55,19 @@ service:
 
 # BunkerWeb variables
 bunkerweb:
+  ## @param bunkerweb.kind Install as deployment or daemonset
+  ##
+  kind: daemonset
+  ## @param bunkerweb.replicaCount Desired number of Controller pods
+  ##
+  replicaCount: 3
+  ## @param bunkerweb.revisionHistoryLimit The number of old history to retain to allow rollback
+  ##
+  revisionHistoryLimit: 10
+  antiAffinity: soft
+  affinity:
+    podAntiAffinity:
+      topologyKey: kubernetes.io/hostname
   repository: bunkerity/bunkerweb
   pullPolicy: Always
   tag: 1.6.1
@@ -84,6 +97,17 @@ bunkerweb:
     periodSeconds: 1
     timeoutSeconds: 1
     failureThreshold: 3
+  ## PodDisruptionBudget for default backend
+  ## bunkerweb Pod Disruption Budget configuration
+  ## ref: https://kubernetes.io/docs/tasks/run-application/configure-pdb/
+  ## @param bunkerweb.pdb.create Enable Pod Disruption Budget configuration
+  ## @param bunkerweb.pdb.minAvailable Minimum number/percentage of Default backend pods that should remain scheduled
+  ## @param bunkerweb.pdb.maxUnavailable Maximum number/percentage of Default backend pods that should remain scheduled
+  ##
+  pdb:
+    create: true
+    minAvailable: ""
+    maxUnavailable: ""
 
 # Scheduler variables
 scheduler:

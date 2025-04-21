@@ -1,12 +1,17 @@
-{{- if eq .Values.bunkerweb.kind "daemonset" }}
+{{- if eq .Values.bunkerweb.kind "deployment" }}
 apiVersion: apps/v1
-kind: DaemonSet
+kind: Deployment
 metadata:
   name: {{ include "bunkerweb.fullname" . }}
   namespace: {{ include "bunkerweb.namespace" . }}
   labels:
     {{- include "bunkerweb.labels" . | nindent 4 }}
 spec:
+  replicas:  {{ .Values.bunkerweb.replicaCount }}
+  revisionHistoryLimit: {{ .Values.bunkerweb.revisionHistoryLimit }}
+  {{- if .Values.bunkerweb.updateStrategy }}
+  strategy: {{- toYaml .Values.bunkerweb.updateStrategy | nindent 4 }}
+  {{- end }}
   selector:
     matchLabels:
       {{- include "bunkerweb.selectorLabels" . | nindent 6 }}
@@ -25,6 +30,25 @@ spec:
         {{- end }}
         bunkerweb.io/component: "bunkerweb"
     spec:
+      {{- if eq .Values.bunkerweb.antiAffinity "hard" }}
+      affinity:
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - topologyKey: {{ .Values.bunkerweb.affinity.podAntiAffinity.topologyKey | quote }}
+              labelSelector:
+                matchLabels:
+                  bunkerweb.io/component: "bunkerweb"
+      {{- else if eq .Values.bunkerweb.antiAffinity "soft" }}
+      affinity:
+        podAntiAffinity:
+          preferredDuringSchedulingIgnoredDuringExecution:
+          - weight: 1
+            podAffinityTerm:
+              topologyKey: {{ .Values.bunkerweb.affinity.podAntiAffinity.topologyKey | quote }}
+              labelSelector:
+                matchLabels:
+                  bunkerweb.io/component: "bunkerweb"
+      {{- end }}
       containers:
         # using bunkerweb as name is mandatory
         - name: bunkerweb
@@ -36,9 +60,7 @@ spec:
           {{- end }}
           ports:
             - containerPort: 8080
-              hostPort: 80
             - containerPort: 8443
-              hostPort: 443
           env:
             # Mandatory for k8s integration
             - name: KUBERNETES_MODE
