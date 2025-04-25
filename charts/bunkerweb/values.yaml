@@ -4,6 +4,7 @@ nameOverride: ""
 namespaceOverride: ""
 fullnameOverride: ""
 nodeSelector: {}
+tolerations: []
 
 # Settings related to BW in a k8s environment
 settings:
@@ -64,13 +65,14 @@ bunkerweb:
   ## @param bunkerweb.revisionHistoryLimit The number of old history to retain to allow rollback
   ##
   revisionHistoryLimit: 10
-  antiAffinity: soft
-  affinity:
-    podAntiAffinity:
-      topologyKey: kubernetes.io/hostname
   repository: bunkerity/bunkerweb
-  pullPolicy: Always
   tag: 1.6.1
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
+  affinity: {}
+  podAntiAffinityPreset: 'soft'
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -112,8 +114,11 @@ bunkerweb:
 # Scheduler variables
 scheduler:
   repository: bunkerity/bunkerweb-scheduler
-  pullPolicy: Always
   tag: 1.6.1
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -129,8 +134,11 @@ scheduler:
 # Controller variables
 controller:
   repository: bunkerity/bunkerweb-autoconf
-  pullPolicy: Always
   tag: 1.6.1
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -146,8 +154,11 @@ controller:
 ui:
   enabled: true
   repository: bunkerity/bunkerweb-ui
-  pullPolicy: Always
   tag: 1.6.1
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   podAnnotations: {}
   podLabels: {}
   securityContext:
@@ -159,10 +170,25 @@ ui:
         - ALL
   extraEnvs: []
   # todo : probes
+  logs:
+    enabled: false
+    repository: balabit/syslog-ng
+    pullPolicy: Always
+    tag: 4.8.0
+    persistence:
+      size: 5Gi
+      storageClass: ""
+
 
 # Database variables
 mariadb:
   enabled: true
+  repository: mariadb
+  tag: '11'
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   persistence:
     size: 5Gi
     storageClass: ""
@@ -176,6 +202,12 @@ mariadb:
 # Redis variables
 redis:
   enabled: true
+  repository: redis
+  tag: 7-alpine
+  pullPolicy: Always
+  imagePullSecrets: []
+  nodeSelector: {}
+  tolerations: []
   config:
     password: "changeme"
 
